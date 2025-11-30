@@ -1,0 +1,53 @@
+﻿@model IEnumerable<SportsEvents.Web.Models.EventImage>
+
+@{
+    ViewData["Title"] = "Pending Images";
+    var uploaderEmails = ViewBag.UploaderEmails as IDictionary<string, string>;
+}
+
+<h2>Pending Images</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event</th>
+            <th>Preview</th>
+            <th>Uploaded At</th>
+            <th>Uploader</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var img in Model)
+        {
+            <tr>
+                <td>@img.SportEvent?.Name</td>
+                <td>
+                    <img src="@img.ImageUrl" alt="Image" style="max-width:150px; max-height:150px;" />
+                </td>
+                <td>@img.UploadedAt</td>
+                <td>
+                    @{
+                        string email = img.UploaderUserId;
+                        if (uploaderEmails != null && uploaderEmails.ContainsKey(img.UploaderUserId))
+                        {
+                            email = uploaderEmails[img.UploaderUserId];
+                        }
+                    }
+                    @email
+                </td>
+                <td>
+                    <form asp-action="Approve" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@img.Id" />
+                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                    </form>
+
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@img.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

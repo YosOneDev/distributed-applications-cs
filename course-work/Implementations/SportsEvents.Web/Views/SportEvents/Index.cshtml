@@ -1,0 +1,160 @@
+﻿@model IEnumerable<SportsEvents.Web.Models.SportEvent>
+
+@{
+    ViewData["Title"] = "Sport Events";
+
+    var currentSort = ViewData["CurrentSort"] as string;
+    var currentNameFilter = ViewData["CurrentNameFilter"] as string;
+    var currentLocationFilter = ViewData["CurrentLocationFilter"] as string;
+
+    var currentPage = ViewData["CurrentPage"] != null ? (int)ViewData["CurrentPage"] : 1;
+    var totalPages = ViewData["TotalPages"] != null ? (int)ViewData["TotalPages"] : 1;
+}
+
+<h1>Sport Events</h1>
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">Create New Event</a>
+    </p>
+}
+
+
+@if (User.Identity.IsAuthenticated)
+{
+    <form asp-action="Index" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Search by Name</label>
+                <input type="text" name="searchName" value="@currentNameFilter" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label>Search by Location</label>
+                <input type="text" name="searchLocation" value="@currentLocationFilter" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["NameSortParm"]"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchLocation="@currentLocationFilter"
+                       asp-route-page="@currentPage">
+                        Name
+                    </a>
+                }
+                else
+                {
+                    <text>Name</text>
+                }
+            </th>
+            <th>Sport Type</th>
+            <th>Location</th>
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["DateSortParm"]"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchLocation="@currentLocationFilter"
+                       asp-route-page="@currentPage">
+                        Start Date
+                    </a>
+                }
+                else
+                {
+                    <text>Start Date</text>
+                }
+            </th>
+            <th>End Date</th>
+            <th>Max Participants</th>
+            <th>Participation Fee</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.SportType</td>
+                <td>@item.Location</td>
+                <td>@item.StartDate.ToString("dd.MM.yyyy")</td>
+                <td>@(item.EndDate.HasValue? item.EndDate.Value.ToString("dd.MM.yyyy") : "")</td>
+                <td>@item.MaxParticipants</td>
+                <td>@item.ParticipationFee</td>
+                <td>@item.Description</td>
+                <td>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <text>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        </text>
+                    }
+                    else
+                    {
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (User.Identity.IsAuthenticated && totalPages > 1)
+{
+    <nav aria-label="Pagination">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchName="@currentNameFilter"
+                   asp-route-searchLocation="@currentLocationFilter">
+                    Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-sortOrder="@currentSort"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchLocation="@currentLocationFilter">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchName="@currentNameFilter"
+                   asp-route-searchLocation="@currentLocationFilter">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

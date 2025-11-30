@@ -1,0 +1,163 @@
+﻿@model IEnumerable<SportsEvents.Web.Models.Participant>
+
+@{
+    ViewData["Title"] = "Participants";
+
+    var currentSort = ViewData["CurrentSort"] as string;
+    var currentNameFilter = ViewData["CurrentNameFilter"] as string;
+    var currentCityFilter = ViewData["CurrentCityFilter"] as string;
+
+    var currentPage = ViewData["CurrentPage"] != null ? (int)ViewData["CurrentPage"] : 1;
+    var totalPages = ViewData["TotalPages"] != null ? (int)ViewData["TotalPages"] : 1;
+}
+
+<h1>Participants</h1>
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">Create New Participant</a>
+    </p>
+}
+
+@if (User.Identity.IsAuthenticated)
+{
+    <form method="get" asp-action="Index" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Search by Name</label>
+                <input name="searchName" value="@currentNameFilter" class="form-control" />
+            </div>
+
+            <div class="col-md-4">
+                <label>Search by City</label>
+                <input name="searchCity" value="@currentCityFilter" class="form-control" />
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-primary me-2">Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["NameSortParm"]"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchCity="@currentCityFilter"
+                       asp-route-page="@currentPage">
+                        First Name
+                    </a>
+                }
+                else
+                {
+                    <text>First Name</text>
+                }
+            </th>
+
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["AgeSortParm"]"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchCity="@currentCityFilter"
+                       asp-route-page="@currentPage">
+                        Age
+                    </a>
+                }
+                else
+                {
+                    <text>Age</text>
+                }
+            </th>
+
+            <th>City</th>
+            <th>Registered On</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.FirstName</td>
+                <td>@p.LastName</td>
+                <td>@p.Email</td>
+                <td>@p.PhoneNumber</td>
+                <td>@p.Age</td>
+                <td>@p.City</td>
+                <td>@p.RegisteredOn.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@(p.IsActive ? "Yes" : "No")</td>
+
+                <td>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <text>
+                            <a asp-action="Edit" asp-route-id="@p.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@p.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@p.Id">Delete</a>
+                        </text>
+                    }
+                    else
+                    {
+                        <a asp-action="Details" asp-route-id="@p.Id">Details</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (User.Identity.IsAuthenticated && totalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchName="@currentNameFilter"
+                   asp-route-searchCity="@currentCityFilter">
+                    Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-route-page="@i"
+                       asp-route-sortOrder="@currentSort"
+                       asp-route-searchName="@currentNameFilter"
+                       asp-route-searchCity="@currentCityFilter">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchName="@currentNameFilter"
+                   asp-route-searchCity="@currentCityFilter">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

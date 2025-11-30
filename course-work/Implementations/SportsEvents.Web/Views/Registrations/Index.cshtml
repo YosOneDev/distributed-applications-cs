@@ -1,0 +1,164 @@
+﻿@model IEnumerable<SportsEvents.Web.Models.Registration>
+
+@{
+    ViewData["Title"] = "Registrations";
+
+    var currentSort = ViewData["CurrentSort"] as string;
+    var currentEventFilter = ViewData["CurrentEventFilter"] as string;
+    var currentParticipantFilter = ViewData["CurrentParticipantFilter"] as string;
+
+    var currentPage = ViewData["CurrentPage"] != null ? (int)ViewData["CurrentPage"] : 1;
+    var totalPages = ViewData["TotalPages"] != null ? (int)ViewData["TotalPages"] : 1;
+}
+
+<h1>Registrations</h1>
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">Create New Registration</a>
+    </p>
+}
+
+
+@if (User.Identity.IsAuthenticated)
+{
+    <form asp-action="Index" method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Search by Event</label>
+                <input type="text" name="searchEvent" value="@currentEventFilter" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label>Search by Participant (email/name)</label>
+                <input type="text" name="searchParticipant" value="@currentParticipantFilter" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["EventSortParm"]"
+                       asp-route-searchEvent="@currentEventFilter"
+                       asp-route-searchParticipant="@currentParticipantFilter"
+                       asp-route-page="@currentPage">
+                        Event
+                    </a>
+                }
+                else
+                {
+                    <text>Event</text>
+                }
+            </th>
+            <th>Participant</th>
+            <th>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Index"
+                       asp-route-sortOrder="@ViewData["DateSortParm"]"
+                       asp-route-searchEvent="@currentEventFilter"
+                       asp-route-searchParticipant="@currentParticipantFilter"
+                       asp-route-page="@currentPage">
+                        Registered At
+                    </a>
+                }
+                else
+                {
+                    <text>Registered At</text>
+                }
+            </th>
+
+            <th>Status</th>
+            <th>Is Paid</th>
+            <th>Paid Amount</th>
+            <th>Notes</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@(r.SportEvent != null ? r.SportEvent.Name : "N/A")</td>
+                <td>
+                    @(r.Participant != null
+                                    ? $"{r.Participant.FirstName} {r.Participant.LastName} ({r.Participant.Email})"
+                                    : "N/A")
+            </td>
+            <td>@r.RegisteredAt.ToString("dd.MM.yyyy HH:mm")</td>
+            <td>@r.Status</td>
+            <td>@(r.IsPaid ? "Yes" : "No")</td>
+            <td>@r.PaidAmount</td>
+            <td>@r.Notes</td>
+            <td>
+                @if (User.IsInRole("Admin"))
+                    {
+                        <text>
+                            <a asp-action="Edit" asp-route-id="@r.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@r.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@r.Id">Delete</a>
+                        </text>
+                    }
+                    else
+                    {
+                        <a asp-action="Details" asp-route-id="@r.Id">Details</a>
+                    }
+                </td>
+
+        </tr>
+       }
+    </tbody>
+</table>
+
+@if (User.Identity.IsAuthenticated && totalPages > 1)
+{
+    <nav aria-label="Registrations pagination">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchEvent="@currentEventFilter"
+                   asp-route-searchParticipant="@currentParticipantFilter">
+                    Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-sortOrder="@currentSort"
+                       asp-route-searchEvent="@currentEventFilter"
+                       asp-route-searchParticipant="@currentParticipantFilter">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-sortOrder="@currentSort"
+                   asp-route-searchEvent="@currentEventFilter"
+                   asp-route-searchParticipant="@currentParticipantFilter">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

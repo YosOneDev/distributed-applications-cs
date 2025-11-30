@@ -1,0 +1,123 @@
+﻿@using System.Security.Claims
+@model SportsEvents.Web.Models.SportEvent
+
+@{
+    ViewData["Title"] = "Details";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<h1>Event Details</h1>
+
+<div>
+    <h4>Sport Event</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SportType)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SportType)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Location)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Location)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.StartDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StartDate)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EndDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EndDate)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.MaxParticipants)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.MaxParticipants)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ParticipationFee)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ParticipationFee)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+    </dl>
+</div>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <p>
+        <a asp-controller="EventImages"
+           asp-action="Create"
+           asp-route-eventId="@Model.Id"
+           class="btn btn-outline-primary">
+            Upload Image
+        </a>
+    </p>
+}
+
+@if (Model.Images != null && Model.Images.Any(i => i.IsApproved))
+{
+    <div class="row">
+        @foreach (var img in Model.Images.Where(i => i.IsApproved))
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <img class="card-img-top" src="@img.ImageUrl" alt="Event image" />
+                    <div class="card-body text-center">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated &&
+                             (User.IsInRole("Admin") || img.UploaderUserId == currentUserId))
+                        {
+                            <form asp-controller="EventImages"
+                                  asp-action="Delete"
+                                  method="post"
+                                  class="d-inline">
+                                <input type="hidden" name="id" value="@img.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No approved images yet.</p>
+}
+
+
+<div class="mt-3">
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
+    }
+    <a asp-action="Index">Back to List</a>
+</div>

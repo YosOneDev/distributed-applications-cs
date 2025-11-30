@@ -1,0 +1,72 @@
+﻿@model IEnumerable<SportsEvents.Web.Models.UserRolesViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+    var currentFilter = ViewData["CurrentFilter"] as string;
+}
+
+<h1>User Management</h1>
+
+<p class="mb-3">
+    <a asp-controller="EventImages" asp-action="Pending" class="btn btn-outline-info">
+        Pending Images (Approve)
+    </a>
+</p>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label>Search by email</label>
+            <input name="searchEmail" value="@currentFilter" class="form-control" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary me-2">Search</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@string.Join(", ", user.Roles)</td>
+                <td>
+                    <form asp-action="MakeAdmin" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-warning">Make Admin</button>
+                    </form>
+
+                    <form asp-action="RemoveAdmin" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-warning">Remove Admin</button>
+                    </form>
+
+                    <form asp-action="MakeUser" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-secondary">Add User Role</button>
+                    </form>
+
+                    <form asp-action="RemoveUser" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Remove User Role</button>
+                    </form>
+
+                    <form asp-action="DeleteUser" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Delete User</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
